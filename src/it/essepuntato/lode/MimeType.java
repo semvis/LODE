@@ -17,10 +17,11 @@ package it.essepuntato.lode;
 
 public interface MimeType {
 	public static String[] mimeTypes = {
-		"application/rdf+xml" ,
-		"text/turtle" , 
-		"application/x-turtle",
-		"text/xml" ,
-		"text/plain", 
-		"*/*"};
+		"application/rdf+xml" //,
+		//"text/turtle" , 
+		//"application/x-turtle",
+		//"text/xml" ,
+		//"text/plain", 
+		//"*/*"
+		};
 }
