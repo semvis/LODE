@@ -1,33 +1,9 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *      
- * Copyright (c) 2010-2013, Silvio Peroni <essepuntato@gmail.com>
- * 
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 package it.essepuntato.lode;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.HttpURLConnection;
+import java.io.*;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -53,18 +30,16 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.mindswap.pellet.PelletOptions;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.io.IRIDocumentSource;
 import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
 import org.semanticweb.owlapi.io.StringDocumentSource;
 import org.semanticweb.owlapi.io.StringDocumentTarget;
-import org.semanticweb.owlapi.io.SystemOutDocumentTarget;
+import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.AddOntologyAnnotation;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.MissingImportHandlingStrategy;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+import org.semanticweb.owlapi.model.OWLAnnotationSubject;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLDataProperty;
@@ -76,7 +51,6 @@ import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyID;
-import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.util.InferredAxiomGenerator;
@@ -108,6 +82,7 @@ public class LodeServlet extends HttpServlet {
 	private String xsltURL = "http://lode.sourceforge.net/xslt";
 	private String cssLocation = "http://lode.sourceforge.net/css/";
 	private int maxTentative = 3;
+	private String host = "";
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -122,13 +97,18 @@ public class LodeServlet extends HttpServlet {
 	protected void doGet(
 			HttpServletRequest request, HttpServletResponse response) 
 	throws ServletException, IOException {
-		response.setContentType("text/html");
+		response.setContentType("text/html; charset=UTF-8");
+		
+		System.out.println(getServletContext().getContextPath());
+		System.out.println(request.getRemoteAddr());
+		System.out.println(request.getRequestURI());
+		System.out.println(request.getPathInfo());
 		
 		resolvePaths(request); /* Used instead of the SourceForge repo */
 		response.setCharacterEncoding("UTF-8");
 		PrintWriter out = response.getWriter();
 		
-		SourceExtractor extractor = new SourceExtractor();
+		SourceExtractor extractor = new SourceExtractor(this);
 		extractor.addMimeTypes(MimeType.mimeTypes);
 		
 		for (int i = 0; i < maxTentative; i++) {
@@ -136,9 +116,8 @@ public class LodeServlet extends HttpServlet {
 				String stringURL = request.getParameter("url");
 				
 				URL ontologyURL = new URL(stringURL);
-				HttpURLConnection.setFollowRedirects(true);
 				
-				String content = "";
+				String content = extractor.exec(ontologyURL);
 			
 				boolean useOWLAPI = new Boolean(request.getParameter("owlapi"));
 				boolean considerImportedOntologies = 
@@ -147,6 +126,11 @@ public class LodeServlet extends HttpServlet {
 					new Boolean(request.getParameter("closure"));
 				boolean useReasoner = 
 					new Boolean(request.getParameter("reasoner"));
+				// added by Jan
+				boolean ignoreStableSettings = 
+						new Boolean(request.getParameter("nonstable"));
+				boolean renderImports = 
+						new Boolean(request.getParameter("renderimports"));
 				
 				if (considerImportedOntologies || considerImportedClosure || useReasoner) {
 					useOWLAPI = true;
@@ -157,23 +141,23 @@ public class LodeServlet extends HttpServlet {
 					lang = "en";
 				}
 				
+				content = parseWithOWLAPI(content, useOWLAPI, considerImportedOntologies, 
+						considerImportedClosure, useReasoner);
 				
-				if (useOWLAPI) {
-					content = parseWithOWLAPI(ontologyURL, useOWLAPI, considerImportedOntologies, 
-							considerImportedClosure, useReasoner);
-				} else {
-					content = extractor.exec(ontologyURL);
+				System.out.println(content);
+				//Edited Start
+				/*try {
+					BufferedWriter out2 = new BufferedWriter(new FileWriter("test.xml"));
+					out2.write(content);
+					out2.close();
 				}
+				catch (IOException e)
+				{
+					System.out.println("Exception ");		
+				}*/
+				//Edited End
 				
-				/* As it was before the new OWLAPI
-				content = extractor.exec(ontologyURL);
-				if (useOWLAPI) {
-					content = parseWithOWLAPI(content, useOWLAPI, considerImportedOntologies, 
-							considerImportedClosure, useReasoner);
-				}
-				*/
-				
-				content = applyXSLTTransformation(content, stringURL, lang);
+				content = applyXSLTTransformation(content, stringURL, lang, ignoreStableSettings, renderImports);
 				
 				out.println(content);
 				i = maxTentative;
@@ -186,34 +170,34 @@ public class LodeServlet extends HttpServlet {
 	}
 	
 	private void resolvePaths(HttpServletRequest request) {
-		xsltURL = getServletContext().getRealPath("/extraction.xsl");
-		String requestURL = request.getRequestURL().toString();
-		int index = requestURL.lastIndexOf("/");
-		cssLocation = requestURL.substring(0, index) + File.separator;
+		xsltURL = getServletContext().getRealPath("extraction.xsl");
+		host = request.getHeader("host");
+		cssLocation = "http://" + host + getServletContext().getContextPath() + File.separator;
 	}
 
-	/* Old version of the method (before upgrading OWLAPI)
 	private String parseWithOWLAPI(
-			String content,
-			boolean useOWLAPI,
+			String content, boolean useOWLAPI,
 			boolean considerImportedOntologies, 
 			boolean considerImportedClosure,
 			boolean useReasoner) 
-	throws OWLOntologyCreationException, OWLOntologyStorageException, URISyntaxException {
+	throws OWLOntologyCreationException, OWLOntologyStorageException {
 		String result = content;
+		
+		// make utf-8
+		// result=makeUTF8(result);
 		
 		if (useOWLAPI) {
 			
+			// Temporarily remove Import statements
 			List<String> removed = new ArrayList<String>();
 			if (!considerImportedClosure && !considerImportedOntologies) {
 				result = removeImportedAxioms(result, removed);
 			}
 			
-			
 			OWLOntologyManager manager = OWLManager.createOWLOntologyManager(); 
-			
-			OWLOntology ontology = manager.loadOntologyFromOntologyDocument(
-					new StringDocumentSource(result));
+			OWLOntology ontology = 
+				manager.loadOntologyFromOntologyDocument(
+						new StringDocumentSource(result));
 			
 			if (considerImportedClosure || considerImportedOntologies) {
 				Set<OWLOntology> setOfImportedOntologies = new HashSet<OWLOntology>();
@@ -222,6 +206,7 @@ public class LodeServlet extends HttpServlet {
 				} else {
 					setOfImportedOntologies.addAll(ontology.getImportsClosure());
 				}
+				
 				for (OWLOntology importedOntology : setOfImportedOntologies) {
 					manager.addAxioms(ontology, importedOntology.getAxioms());
 				}
@@ -236,49 +221,10 @@ public class LodeServlet extends HttpServlet {
 			manager.saveOntology(ontology, new RDFXMLOntologyFormat(), parsedOntology);
 			result = parsedOntology.toString();
 			
+			// Recreate temporarily removed Import statements
 			if (!removed.isEmpty() && !considerImportedClosure && !considerImportedOntologies) {
 				result = addImportedAxioms(result, removed);
 			} 
-		}
-		
-		return result;
-	}
-	*/
-	
-	private String parseWithOWLAPI(
-			URL ontologyURL,
-			boolean useOWLAPI,
-			boolean considerImportedOntologies, 
-			boolean considerImportedClosure,
-			boolean useReasoner) 
-	throws OWLOntologyCreationException, OWLOntologyStorageException, URISyntaxException {
-		String result = "";
-		
-		if (useOWLAPI) {
-			OWLOntologyManager manager = OWLManager.createOWLOntologyManager(); 
-			
-			OWLOntology ontology = manager.loadOntology(IRI.create(ontologyURL.toString()));
-			
-			if (considerImportedClosure || considerImportedOntologies) {
-				Set<OWLOntology> setOfImportedOntologies = new HashSet<OWLOntology>();
-				if (considerImportedOntologies) {
-					setOfImportedOntologies.addAll(ontology.getDirectImports());
-				} else {
-					setOfImportedOntologies.addAll(ontology.getImportsClosure());
-				}
-				for (OWLOntology importedOntology : setOfImportedOntologies) {
-					manager.addAxioms(ontology, importedOntology.getAxioms());
-				}
-			}
-			
-			if (useReasoner) {
-				ontology = parseWithReasoner(manager, ontology);
-			}
-			
-			StringDocumentTarget parsedOntology = new StringDocumentTarget();
-			
-			manager.saveOntology(ontology, new RDFXMLOntologyFormat(), parsedOntology);
-			result = parsedOntology.toString();
 		}
 		
 		return result;
@@ -306,6 +252,7 @@ public class LodeServlet extends HttpServlet {
 			}
 			
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 			StreamResult output = new StreamResult(new StringWriter());
 			DOMSource source = new DOMSource(document);
 			transformer.transform(source, output);
@@ -326,7 +273,6 @@ public class LodeServlet extends HttpServlet {
 		}
 	}
 
-	/*
 	private String removeImportedAxioms(String result, List<String> removedImport) {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 	    factory.setNamespaceAware(true);
@@ -360,6 +306,7 @@ public class LodeServlet extends HttpServlet {
 			}
 			
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 			StreamResult output = new StreamResult(new StringWriter());
 			DOMSource source = new DOMSource(document);
 			transformer.transform(source, output);
@@ -379,11 +326,65 @@ public class LodeServlet extends HttpServlet {
 			return result;
 		}
 	}
-	*/
+	
+	/**
+	 * Just serves as a workaround to make document UTF-8. This did only work for the owlapi mode otherwise. 
+	 * @param result
+	 * @return
+	 */
+	private String makeUTF8(String result) {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	    factory.setNamespaceAware(true);
+	    try {
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document document = builder.parse(new ByteArrayInputStream(result.getBytes()));
+			
+/*			NodeList ontologies = 
+				document.getElementsByTagNameNS("http://www.w3.org/2002/07/owl#", "Ontology");
+			if (ontologies.getLength() > 0) {
+				Element ontology = (Element) ontologies.item(0);
+				
+				for (String toBeAdded : removed) {
+					Element importElement = 
+						document.createElementNS("http://www.w3.org/2002/07/owl#","owl:imports");
+					importElement.setAttributeNS(
+							"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "rdf:resource", toBeAdded);
+					ontology.appendChild(importElement);
+				}
+			}
+			*/
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+			StreamResult output = new StreamResult(new StringWriter());
+			DOMSource source = new DOMSource(document);
+			transformer.transform(source, output);
+
+			return output.getWriter().toString();
+		} catch (ParserConfigurationException e) {
+			System.out.println(e);
+			return result;
+		} catch (SAXException e) {
+			System.out.println("sax exception:");
+			System.out.println(e);
+			return result;
+		} catch (IOException e) {
+			System.out.println(e);
+			return result;
+		} catch (TransformerConfigurationException e) {
+			System.out.println(e);
+			return result;
+		} catch (TransformerFactoryConfigurationError e) {
+			System.out.println(e);
+			return result;
+		} catch (TransformerException e) {
+			System.out.println(e);
+			return result;
+		}
+	}
 
 	private OWLOntology parseWithReasoner(OWLOntologyManager manager, OWLOntology ontology) {
 		try {
-			PelletOptions.load(new URL("http://" + cssLocation + "pellet.properties"));
+			PelletOptions.load(new URL("http://" + host + getServletContext().getContextPath() + File.separator + "pellet.properties"));
 			PelletReasoner reasoner = PelletReasonerFactory.getInstance().createReasoner(ontology);
 			reasoner.getKB().prepare();
 			List<InferredAxiomGenerator<? extends OWLAxiom>> generators=
@@ -492,8 +493,8 @@ public class LodeServlet extends HttpServlet {
 			"</html>";
 	}
 
-	private String applyXSLTTransformation(String source, String ontologyUrl, String lang) 
-	throws TransformerException {	
+	private String applyXSLTTransformation(String source, String ontologyUrl, String lang, boolean ignoreStableSettings, boolean renderImports) 
+	throws TransformerException, UnsupportedEncodingException {	
 		TransformerFactory tfactory = new net.sf.saxon.TransformerFactoryImpl();
 		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -505,7 +506,11 @@ public class LodeServlet extends HttpServlet {
 		transformer.setParameter("css-location", cssLocation);
 		transformer.setParameter("lang", lang);
 		transformer.setParameter("ontology-url", ontologyUrl);
-		transformer.setParameter("source", cssLocation + "source");
+		transformer.setParameter("source", "http://" + host + getServletContext().getContextPath() + "/source");
+		// added by Jan
+		transformer.setParameter("ignore-stable", ignoreStableSettings);
+		transformer.setParameter("render-imports", renderImports);
+		transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 		
 		StreamSource inputSource = new StreamSource(new StringReader(source));
 		
@@ -513,6 +518,7 @@ public class LodeServlet extends HttpServlet {
 				inputSource, 
 				new StreamResult(output));
 		
-		return output.toString();
+		return output.toString("UTF-8");
 	}
+	
 }
