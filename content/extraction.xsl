@@ -1730,7 +1730,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                 <xsl:if test="exists(dc:creator|dct:creator[ancestor::owl:Ontology])">
                     <dt><xsl:value-of select="f:getDescriptionLabel('authors')" />:</dt>
                     <xsl:apply-templates select="dc:creator|dct:creator[ancestor::owl:Ontology]">
-                        <xsl:sort select="text()|@rdf:resource" data-type="text" order="ascending" />
+                        <!-- Error: A sequence of more than one item is not allowed as the @select attribute of xsl:sort: <xsl:sort select="text()|@rdf:resource" data-type="text" order="ascending" />-->
                     </xsl:apply-templates>
                 </xsl:if>
                 <xsl:if test="exists(dc:contributor|dct:contributor[ancestor::owl:Ontology])">
