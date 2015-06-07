@@ -186,7 +186,7 @@ public class LodeServlet extends HttpServlet {
 	}
 	
 	private void resolvePaths(HttpServletRequest request) {
-		xsltURL = getServletContext().getRealPath("extraction.xsl");
+		xsltURL = getServletContext().getRealPath("/extraction.xsl");
 		String requestURL = request.getRequestURL().toString();
 		int index = requestURL.lastIndexOf("/");
 		cssLocation = requestURL.substring(0, index) + File.separator;
