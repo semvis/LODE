@@ -170,7 +170,7 @@ public class LodeServlet extends HttpServlet {
 	}
 	
 	private void resolvePaths(HttpServletRequest request) {
-		xsltURL = getServletContext().getRealPath("extraction.xsl");
+		xsltURL = getServletContext().getRealPath("/extraction.xsl");
 		host = request.getHeader("host");
 		cssLocation = "http://" + host + getServletContext().getContextPath() + File.separator;
 	}
