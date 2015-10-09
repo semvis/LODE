@@ -99,10 +99,12 @@ public class LodeServlet extends HttpServlet {
 	throws ServletException, IOException {
 		response.setContentType("text/html; charset=UTF-8");
 		
-		System.out.println(getServletContext().getContextPath());
-		System.out.println(request.getRemoteAddr());
-		System.out.println(request.getRequestURI());
-		System.out.println(request.getPathInfo());
+//		System.out.println(getServletContext().getContextPath());
+//		System.out.println(request.getRemoteAddr());
+//		System.out.println(request.getRequestURI());
+//		System.out.println(request.getPathInfo());
+//		System.out.println(request.getParameter("url"));
+//		System.out.println(request.getHeader("Accept"));
 		
 		resolvePaths(request); /* Used instead of the SourceForge repo */
 		response.setCharacterEncoding("UTF-8");
