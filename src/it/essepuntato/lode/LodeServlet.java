@@ -81,7 +81,7 @@ public class LodeServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private String xsltURL = "http://lode.sourceforge.net/xslt";
 	private String cssLocation = "http://lode.sourceforge.net/css/";
-	private int maxTentative = 3;
+	private int maxTentative = 1;
 	private String host = "";
        
     /**
