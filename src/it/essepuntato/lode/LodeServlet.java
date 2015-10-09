@@ -132,9 +132,9 @@ public class LodeServlet extends HttpServlet {
 				boolean renderImports = 
 						new Boolean(request.getParameter("renderimports"));
 				
-				if (considerImportedOntologies || considerImportedClosure || useReasoner) {
+//				if (considerImportedOntologies || considerImportedClosure || useReasoner) {
 					useOWLAPI = true;
-				}
+//				}
 				
 				String lang = request.getParameter("lang");
 				if (lang == null) {
