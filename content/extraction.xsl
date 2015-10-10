@@ -2005,7 +2005,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
         </span>-->
 		<span class="backlink">
 			<a href="#{$toc}">
-				<img src="{$static-files-location}arrow_top.png" alt="Back to the {$toc.string}" title="Back to the {$toc.string}"/>
+				<!--<img src="{$static-files-location}arrow_top.png" alt="Back to the {$toc.string}" title="Back to the {$toc.string}"/>-->
+				<span alt="Back to the {$toc.string}" title="Back to the {$toc.string}">▲</span>
 			</a>
 		</span>
     </xsl:template>

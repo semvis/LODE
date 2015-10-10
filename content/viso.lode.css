@@ -22,13 +22,12 @@ strong, b
 
 .entity
 {
-	border:1px solid #EEA !important;
-	background-color: FFC;
-	padding: 20px;
-	-moz-box-shadow: 10px 10px 5px #888;
-	-webkit-box-shadow: 10px 10px 5px #888;
-	box-shadow: 10px 10px 5px #888;
-	margin-bottom:1em;
+	border:0px solid #EEA !important;
+	background-color: #FFC;
+	padding: 15px;
+	-webkit-box-shadow: 2px 2px 7px #669;
+	box-shadow: 2px 2px 7px #99C;
+	margin-bottom:.5em;
 }
 
 
@@ -41,6 +40,7 @@ strong, b
 
 .entity h3
 {
+	font-size: 2.0em;
 	margin-bottom:0.5em;
 	padding-bottom:0em;
 	margin-top:1.5em;
@@ -51,25 +51,37 @@ strong, b
 	color:#998;
 }
 
+.backlink { 
+	border:none !important;
+	background-color: #FFC;
+	/* not sure why I have to set a bg-color here. is grey otherwise */
+	padding: none;
+	margin: -10px -10px 0px 0px;
+	
+}
 
-.backlink
-{
-border:none !important;
-background-color: #FFC;
-/* not sure why I have to set a bg-color here. is grey otherwise */
+.backlink a {
+	font-size: 1.5em;
+	color: #ccc;
+	text-decoration: none;
+}
+
+.backlink a:hover {
+	color: #999;
 }
 
 .hlist
 {
-	border:1px solid !important;
-	background-color: #FF9 !important;
+	border:0px solid !important;
+	background-color: #EFEFEF !important;
 }
 
-
-
-
-
-
+@media screen { 
+a[href]:hover {
+	background: none ;
+	text-decoration: none;
+	}
+}
 
 .comment {
 	margin-top: 1.5em;
@@ -134,12 +146,14 @@ background-color: #FFC;
 	color: grey;
 }
 
-.info, .description {
+.info, .description, .description dl {
 	margin-top: 1.5em; 
 	background:none !important;
 }
 
-
+.description dl {
+	background:none !important;
+}
 
 .references {
 	margin-top: 4em;
