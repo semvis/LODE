@@ -478,7 +478,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 		 	</div>
 			 Edited End (Jan: discuss-button -->
 			
-			<!-- Edited Start (Fabi): discuss-button -->
+			<!-- Edited Start (Fabi): discuss-button
 			<div style="height:2em">
             	<div class="discuss">
             		<a>
@@ -500,7 +500,25 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 		 			</a>
 		 		</div>
 		 	</div>
+			 Edited End (Fabi: discuss-button -->
+			
+			<!-- Edited Start (Jan): discuss-button GitHub wiki -->
+			<!--<div style="height:2em">
+            	<div class="discuss">
+            		<a>
+					<xsl:attribute name="href">					
+					<xsl:text>https://github.com/viso-ontology/viso-ontology/wiki/</xsl:text>
+					<xsl:value-of select="f:getLabel(@rdf:about|@rdf:ID)"/>
+					</xsl:attribute>
+					<xsl:attribute name="target">					
+					<xsl:text>_blank</xsl:text>
+			    	</xsl:attribute>
+					<xsl:text>discuss</xsl:text>
+		 			</a>
+		 		</div>
+		 	</div>-->
 			<!-- Edited End (Fabi: discuss-button -->
+			
         </div>
     </xsl:template>
   
