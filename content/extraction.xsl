@@ -151,18 +151,37 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                 <dl>
                     <dt>Download / Source view:</dt>
                     <dd>
-                        <a title="Try right-clicking + save as .." href="{$source}?url={$ontology-url}"> Ontology source code</a>
+                        <!--<a title="Try right-clicking + save as .." href="{$source}?url={$ontology-url}"> Ontology source code</a>-->
+                        <a title="Show the source code of the ontology ..." href="{$source}?url={$ontology-url}"> Ontology source code</a>
+                    </dd>
+                    <dd>
+	                	<xsl:choose>
+				            <xsl:when test="contains($ontology-url,'rvl')">
+								<a href="http://github.com/semvis/rvl/wiki/Download" title="Download the RVL vocabulary from GitHub ...">
+								    Download
+               		 			</a>
+				            </xsl:when>
+				            <xsl:otherwise>
+								<a href="http://github.com/viso-ontology/viso-ontology/wiki/Download" title="Download the VISO Ontologies from GitHub ...">
+								    Download
+               		 			</a>
+				            </xsl:otherwise>
+			        	</xsl:choose>
                     </dd>
                 </dl>
                 <br/>
-                More on 
-                <a href="http://purl.org/viso/" title="Open the main module of the Visualization Ontology (VISO) ...">VISO</a>: 
-                <a href="http://www-st.inf.tu-dresden.de/smtvis/blog/?page_id=93" title="The VISO Blog ...">
-                     Blog
-                </a> | 
-                <a href="http://purl.org/viso/#download" title="How to download VISO Ontologies...">
-                     Download
-                </a>
+                <xsl:choose>
+		            <xsl:when test="contains($ontology-url,'rvl')">
+		              	More on RVL can be found in the 
+		                <a href="https://github.com/semvis/rvl/wiki" title="The RVL-Wiki on GitHub ...">Wiki</a>.
+		            </xsl:when>
+		            <xsl:otherwise>
+		        		More on <a href="http://purl.org/viso/" title="Open the main module of the Visualization Ontology (VISO) ...">
+		                	http://purl.org/viso/</a> can be found in the   
+		                <a href="https://github.com/viso-ontology/viso-ontology/wiki" title="The VISO-Wiki on GitHub ...">Wiki</a>.
+		            </xsl:otherwise>
+		        </xsl:choose>
+                
                 <xsl:apply-templates select="dc:rights|dct:rights" />
             </div>
             <hr />
@@ -328,10 +347,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                 <xsl:value-of select="@rdf:resource" />
             </a>
 			<!-- Editing start (Jan) -->
-			<xsl:text> (</xsl:text>
+			<!--<xsl:text> (</xsl:text>
             <a title="For performance reasons this docu is cached. This will show you the live-generated version of this module instead (may take up to one minute)."
             	 href="{$server-url-prefix}{@rdf:resource}{$lode-parameters}">live</a>)
-            <xsl:text></xsl:text>
+            <xsl:text></xsl:text>-->
 			<!-- Editing end (Jan) -->
         </dd>
     </xsl:template>
