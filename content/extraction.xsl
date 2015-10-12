@@ -172,8 +172,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                 <br/>
                 <xsl:choose>
 		            <xsl:when test="contains($ontology-url,'rvl')">
-		              	More on RVL can be found in the 
-		                <a href="https://github.com/semvis/rvl/wiki" title="The RVL-Wiki on GitHub ...">Wiki</a>.
+		              	<!--More on RVL can be found in the 
+		                <a href="https://github.com/semvis/rvl/wiki" title="The RVL-Wiki on GitHub ...">Wiki</a>.-->
 		            </xsl:when>
 		            <xsl:otherwise>
 		        		More on <a href="http://purl.org/viso/" title="Open the main module of the Visualization Ontology (VISO) ...">
