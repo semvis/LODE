@@ -1441,7 +1441,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
             <dt><xsl:value-of select="f:getDescriptionLabel('isalsodefinedas')" /></dt>
             <dd>
                 <xsl:for-each select="$punningsequence">
-                    <!--<a href="#{generate-id(.)}"><xsl:value-of select="f:getType(.)" /></a>-->
+                    <a href="#{generate-id(.)}"><xsl:value-of select="f:getType(.)" /></a>
                     <xsl:if test="position() != last()">
                         <xsl:text>, </xsl:text>
                     </xsl:if>
