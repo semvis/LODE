@@ -160,11 +160,13 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 								<a href="http://github.com/semvis/rvl/wiki/Download" title="Download the RVL vocabulary from GitHub ...">
 								    Download
                		 			</a>
+               		 			<span id="forkongithub"><a href="https://github.com/semvis/rvl/">Fork me on GitHub</a></span>
 				            </xsl:when>
 				            <xsl:otherwise>
 								<a href="http://github.com/viso-ontology/viso-ontology/wiki/Download" title="Download the VISO Ontologies from GitHub ...">
 								    Download
                		 			</a>
+               		 			<span id="forkongithub"><a href="https://github.com/viso-ontology/viso-ontology/">Fork me on GitHub</a></span>
 				            </xsl:otherwise>
 			        	</xsl:choose>
                     </dd>
