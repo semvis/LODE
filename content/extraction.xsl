@@ -700,18 +700,18 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 				<!-- Edited (Fabi). If the entry isn't stable it should show a blank text with a mouseover notification instead of a link-->
 				<xsl:choose>
 				<xsl:when test="f:isStable(.) or $ignore-stable">
-				<xsl:choose>
-	         		<xsl:when  test="starts-with(.,$ontology-url)" >
-		 				<a href="#{.}" title="{.}">
-                    		<xsl:value-of select="$label" />
-                		</a> 
-	         		</xsl:when>
-		         	<xsl:otherwise>            
-		        	     <a href="{$extLink}" title="{.} (view in extra module)">
-		        	     	<xsl:value-of select="$label" />
-						</a>
-		   			</xsl:otherwise>
-				</xsl:choose>
+					<xsl:choose>
+		         		<xsl:when  test="starts-with(.,$ontology-url)" >
+			 				<a href="#{.}" title="{.}">
+	                    		<xsl:value-of select="$label" />
+	                		</a> 
+		         		</xsl:when>
+			         	<xsl:otherwise>            
+			        	     <a href="{$extLink}" title="{.} (view in extra module)">
+			        	     	<xsl:value-of select="$label" />
+							</a>
+			   			</xsl:otherwise>
+					</xsl:choose>
                 </xsl:when>
                 <xsl:otherwise>
                     	<a title="not yet stable"><xsl:value-of select="$label" /></a>
