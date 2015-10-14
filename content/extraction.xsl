@@ -107,6 +107,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                         }
                     });
         </script>
+        <script src="{$static-files-location}instance-specific-scripts-and-settings.js" type="text/javascript"><!-- Comment for compatibility --></script>
     </xsl:template>
     
     <xsl:template name="structure">
