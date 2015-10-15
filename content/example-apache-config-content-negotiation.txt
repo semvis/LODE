@@ -1,0 +1,179 @@
+# Using github directly seems to cause trouble when lode downloads imports. Try again later:
+#Define FILE_PATH_VISO https://raw.githubusercontent.com/janpolowinski/viso-ontology/documentable-viso/src/main/resources/modules
+#Define FILE_PATH_RVL https://raw.githubusercontent.com/janpolowinski/rvl/docu/rvl-vocabulary/src/main/resources
+Define FILE_PATH_VISO http://localhost/ontology/viso
+Define FILE_PATH_RVL http://localhost/ontology/rvl
+Define LODE_LOCATION http://localhost/lode
+
+ServerName localhost
+
+<Directory "/Users/Jan/Sites/">
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride All
+    Order allow,deny
+    Allow from localhost
+    Require all granted
+
+ 	  # Test whether these settings are active:
+	  ErrorDocument 404 "Die angeforderte Ressource gibt es hier nicht."
+	
+          Header set Access-Control-Allow-Origin "*"
+
+</Directory>
+
+<VirtualHost localhost:80>
+
+    ProxyPreserveHost Off
+    #RewriteEngine On
+    # Turn off MultiViews (?? necessary?)
+    Options -MultiViews
+
+    <IfModule mod_rewrite.c>
+
+	RewriteEngine On
+
+	# GENERAL STUFF, LODE, SEMVIS proxies ############################################################
+
+	DocumentRoot "/Users/Jan/Sites"
+	# RewriteBase   /ontology # not valid here, only in per directory config files
+
+	# not necessary when using DocumentRoot as done above
+    	#RewriteRule ^/ontology/(.*) http://localhost/~Jan/ontology/$1 [P,L]
+    	#ProxyPassReverse /ontology/ http://localhost/~Jan/ontology/
+
+	# just to avoid reduced readability by many condition checks for simple files below
+	RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} -f [OR]
+	RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} -d [OR]
+	RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} -l
+	RewriteRule (.*) $1 [L]
+
+    	RewriteRule ^/semvis/(.*) http://localhost:8080/semvis/$1 [P,L]
+    	ProxyPassReverse /semvis/ http://localhost:8080/semvis/
+
+    	RewriteRule ^/lode/(.*) http://localhost:8080/lode/$1 [P,L]
+    	ProxyPassReverse /lode/ http://localhost:8080/lode/
+
+
+
+
+	# RVL ############################################################################################
+
+
+	# always serve the RVL-DOCU file as data, not documentation:
+		RewriteRule ^/docu/rvl/docu/$ ${FILE_PATH_RVL}/rvl-docu.ttl [L,R=303,T=application/x-turtle]
+
+	# Rewrite rule to serve turtle content from the namespace URI
+		RewriteCond %{HTTP_ACCEPT} application/x-turtle [OR]
+		RewriteCond %{HTTP_USER_AGENT} ^Java.*$ [OR]
+		RewriteCond %{HTTP_USER_AGENT} ^LODE\ extractor.*$ 
+		RewriteRule ^/docu/rvl/$ ${FILE_PATH_RVL}/rvl.ttl [L,R=303,T=application/x-turtle]
+
+
+	# Rewrite rules to serve directed HTML content from class/prop URIs
+			RewriteCond %{HTTP_ACCEPT} text/html [OR]
+			#RewriteCond %{HTTP_ACCEPT} text/xml [OR]
+			#RewriteCond %{HTTP_ACCEPT} application/xml [OR]
+			RewriteCond %{HTTP_ACCEPT} application/xhtml\+xml
+		RewriteRule ^/docu/rvl/$ ${LODE_LOCATION}/extract?url=http://purl.org/rvl/&closure=true&reasoner=true [R=303,NE]
+
+			RewriteCond %{HTTP_ACCEPT} text/html [OR]
+			#RewriteCond %{HTTP_ACCEPT} text/xml [OR]
+			#RewriteCond %{HTTP_ACCEPT} application/xml [OR]
+			RewriteCond %{HTTP_ACCEPT} application/xhtml\+xml
+		RewriteRule ^/docu/rvl/(.+)$ ${LODE_LOCATION}/extract?url=http://purl.org/rvl/&closure=true&reasoner=true#http://purl.org/rvl/$1 [R=303,NE]
+
+	# DEFAULT: Rewrite rule to serve turtle content from the namespace URI by default (for RVL)
+        # (Anscheinend sendet LODE nicht korrekt application/x-turtle requests, daher turtle data als default)
+		RewriteRule ^/docu/rvl/$ ${FILE_PATH_RVL}/rvl.ttl [L,R=303,T=application/x-turtle]
+
+
+
+
+
+	# VISO/main/ - Serve a static docu  ##########################################################################################
+
+		RewriteCond %{HTTP_ACCEPT} text/html [OR]
+		RewriteCond %{HTTP_ACCEPT} application/xhtml\+xml
+		RewriteRule ^/docu/viso/main/$ ${FILE_PATH_VISO}/main/static-docu/viso-main.html [P,L]
+
+
+
+
+
+	# VISO/facts/empiric  #########################################################################################################
+
+	# Rewrite rule to serve turtle content from the namespace URI
+		RewriteCond %{HTTP_ACCEPT} application/x-turtle [OR]
+		RewriteCond %{HTTP_USER_AGENT} ^Java.*$ [OR]
+		RewriteCond %{HTTP_USER_AGENT} ^LODE\ extractor.*$
+		RewriteRule ^/docu/viso/facts/empiric/$ ${FILE_PATH_VISO}/facts/viso-facts-empiric.ttl [L,R=303,T=application/x-turtle]
+
+	# Rewrite rules to serve directed HTML content from class/prop URIs
+
+		RewriteCond %{HTTP_ACCEPT} text/html [OR]
+		RewriteCond %{HTTP_ACCEPT} application/xhtml\+xml
+		RewriteRule ^/docu/viso/facts/empiric/(.+)$ ${LODE_LOCATION}/extract?url=http://purl.org/viso/facts/empiric/&closure=true#http://purl.org/viso/facts/empiric/$1 [R=303,NE]
+
+		RewriteCond %{HTTP_ACCEPT} text/html [OR]
+		RewriteCond %{HTTP_ACCEPT} application/xhtml\+xml
+		RewriteRule ^/docu/viso/facts/empiric/$ ${LODE_LOCATION}/extract?url=http://purl.org/viso/facts/empiric/&closure=true&reasoner=false [R=303,NE]
+
+	# DEFAULT: Rewrite rule to serve turtle content from the namespace URI by default
+		RewriteRule ^/docu/viso/facts/empiric/$ ${FILE_PATH_VISO}/facts/viso-facts-empiric.ttl [L,R=303,T=application/x-turtle]
+
+
+
+
+
+	# VISO  ##########################################################################################
+
+	#Test:
+		#RewriteRule ^/docu/viso/data/$ ${FILE_PATH_VISO}/data/viso-data.ttl [L,R=303,T=application/x-turtle]
+		#RewriteRule ^/docu/viso/data/$ ${FILE_PATH_VISO}/data/viso-data.ttl [L,R=303,T=application/x-turtle]
+		
+
+	# Rewrite rule to serve turtle content from the namespace URI
+		RewriteCond %{HTTP_ACCEPT} application/x-turtle [OR]
+		RewriteCond %{HTTP_USER_AGENT} ^Java.*$ [OR]
+		RewriteCond %{HTTP_USER_AGENT} ^LODE\ extractor.*$
+		RewriteRule ^/docu/viso/(.+)/$ ${FILE_PATH_VISO}/$1/viso-$1.ttl [L,R=303,T=application/x-turtle]
+
+	# Rewrite rules to serve directed HTML content from class/prop URIs
+
+		# Firefox sendet an LODE: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+
+		RewriteCond %{HTTP_ACCEPT} text/html [OR]
+		#RewriteCond %{HTTP_ACCEPT} text/xml [OR]
+		#RewriteCond %{HTTP_ACCEPT} application/xml [OR]
+		RewriteCond %{HTTP_ACCEPT} application/xhtml\+xml
+		RewriteRule ^/docu/viso/(.+)/(.+)$ ${LODE_LOCATION}/extract?url=http://purl.org/viso/$1/&closure=true&reasoner=true#http://purl.org/viso/$1/$2 [R=303,NE]
+
+		# Extra handling of VISO/bibliography/ and /anno/ : Serve with nonstable=true  ##################################################################
+
+			RewriteCond %{HTTP_ACCEPT} text/html [OR]
+			RewriteCond %{HTTP_ACCEPT} application/xhtml\+xml
+			RewriteRule ^/docu/viso/bibliography/$ ${LODE_LOCATION}/extract?url=http://purl.org/viso/bibliography/&closure=true&nonstable=true [R=303,NE]
+
+			RewriteCond %{HTTP_ACCEPT} text/html [OR]
+			RewriteCond %{HTTP_ACCEPT} application/xhtml\+xml
+			RewriteRule ^/docu/viso/anno/$ ${LODE_LOCATION}/extract?url=http://purl.org/viso/anno/&closure=true&nonstable=true [R=303,NE]
+
+		RewriteCond %{HTTP_ACCEPT} text/html [OR]
+		#RewriteCond %{HTTP_ACCEPT} text/xml [OR]
+		#RewriteCond %{HTTP_ACCEPT} application/xml [OR]
+		RewriteCond %{HTTP_ACCEPT} application/xhtml\+xml
+		RewriteRule ^/docu/viso/(.+)/$ ${LODE_LOCATION}/extract?url=http://purl.org/viso/$1/&closure=true&reasoner=true [R=303,NE]
+
+	# DEFAULT: Rewrite rule to serve turtle content from the namespace URI by default
+
+	# Anscheinend sendet die von LODE verwendete OWLAPI nicht korrekt application/x-turtle requests: application/rdf+xml, application/xml; q=0.5, text/xml; q=0.3, */*; q=0.2
+	# teilweise (1 von 4 Versuchen Imports zu laden) auch: text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2 
+	# daher turtle data als default und application/xml oben bei Browser-Conditions auskommentiert, außerdem die USER-AGENT-spezifischen Tricks oben
+
+		RewriteRule ^/docu/viso/(.+)/$ ${FILE_PATH_VISO}/$1/viso-$1.ttl [L,R=303,T=application/x-turtle]
+
+    </IfModule>
+
+    ServerName localhost
+
+</VirtualHost>
