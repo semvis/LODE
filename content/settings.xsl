@@ -8,8 +8,9 @@
    
 
 <xsl:variable name="forum-url-prefix" as="xs:string+" select="'http://141.76.68.42/question2answer/index.php?qa=discuss&amp;'" />	
-<!--<xsl:variable name="server-url-prefix" as="xs:string+" select="'http://141.76.68.42:8080/lode/extract?url='" />-->
+<!-- <xsl:variable name="server-url-prefix" as="xs:string+" select="'http://194.95.145.45/lode/extract?url='" /> -->
 <xsl:variable name="server-url-prefix" as="xs:string+" select="'http://localhost:8080/lode/extract?url='" />
+<!-- <xsl:variable name="source-location-hardcoded" as="xs:string+" select="'http://194.95.145.45/lode/source'" /> -->
 <xsl:variable name="source-location-hardcoded" as="xs:string+" select="'http://localhost:8080/lode/source'" />
 <xsl:variable name="static-files-location" select="''" as="xs:string" />
 
