@@ -189,7 +189,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
             </div>
             <hr />
             <!-- added by Jan -->
-            <xsl:call-template name="get.stableinfo" />
+<!--             <xsl:call-template name="get.stableinfo" /> -->
             <xsl:call-template name="get.toc" />
             <xsl:apply-templates select="dct:description[normalize-space() != ''] , dct:description[@rdf:resource]" mode="ontology" />
              <!-- Editing start: Comment now after description -->
@@ -1716,7 +1716,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	        <xsl:otherwise>
 	        	<p class="info" style="font-style:italic">Only stable resources are currently shown!
 	        		<a title="Show all resources, not only those being marked as stable."
-            		 href="{$server-url-prefix}{$ontology-url}{$lode-parameters}&amp;nonstable=true">Show all</a> ... 
+            		 href="{$server-url-prefix}{$ontology-url}{$lode-parameters}&amp;nonstable=true&amp;reasoner=true">Show all</a> ... 
 	        	</p>
 	        </xsl:otherwise>
 	     </xsl:choose>
